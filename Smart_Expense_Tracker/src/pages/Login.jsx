@@ -77,25 +77,15 @@ export default function Login() {
         <div className="glass rounded-2xl shadow-2xl p-8 border border-white/20">
           <h2 className="text-2xl font-bold mb-6">Welcome Back</h2>
 
-          {/* Demo Credentials Hint */}
-          <div className="mb-5 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-sm">
-            <p className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
-              🎯 Demo Credentials:
-            </p>
-            <p className="text-muted-foreground">
-              Email:{" "}
-              <span className="font-mono font-medium">demo@fintrack.com</span>
-            </p>
-            <p className="text-muted-foreground">
-              Password: <span className="font-mono font-medium">123456</span>
-            </p>
-          </div>
+          {/* ✅ Demo Credentials box REMOVED */}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Email Address"
               type="email"
-              placeholder="demo@fintrack.com"
+              name="email"
+              autoComplete="username email"
+              placeholder="Enter your email"
               value={formData.email}
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
@@ -106,6 +96,8 @@ export default function Login() {
             <Input
               label="Password"
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="current-password"
               placeholder="Enter your password"
               value={formData.password}
               onChange={(e) =>
