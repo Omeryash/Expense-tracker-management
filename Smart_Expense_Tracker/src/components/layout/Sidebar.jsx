@@ -4,19 +4,17 @@ import {
   LayoutDashboard,
   Wallet,
   TrendingUp,
-  Receipt,
+  History,
   BarChart3,
   User,
   Settings,
-  PlusCircle,
-  History,
 } from "lucide-react";
 
 const navItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/expenses", icon: Wallet, label: "Expenses" },
-  { path: "/add-income", icon: TrendingUp, label: "Add Income" }, // ✅ Sahi path
-  { path: "/transactions", icon: History, label: "Transactions" }, // ✅ Sahi path
+  { path: "/add-income", icon: TrendingUp, label: "Add Income" },
+  { path: "/transactions", icon: History, label: "Transactions" },
   { path: "/analytics", icon: BarChart3, label: "Analytics" },
   { path: "/profile", icon: User, label: "Profile" },
   { path: "/settings", icon: Settings, label: "Settings" },
@@ -29,12 +27,12 @@ export const Sidebar = () => {
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                FinTrack
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent whitespace-nowrap">
+                FinTrackBuddy
               </h1>
               <p className="text-xs text-muted-foreground">Premium Finance</p>
             </div>
