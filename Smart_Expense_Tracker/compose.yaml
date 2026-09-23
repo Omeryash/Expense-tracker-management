@@ -1,0 +1,6 @@
+services:
+  smart-expense-app:
+    image: yashdev04/smart-expense-tracker:latest
+    ports:
+      - "8080:80"
+    container_name: smart-expense-tracker
