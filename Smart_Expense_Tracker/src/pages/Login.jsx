@@ -69,7 +69,7 @@ export default function Login() {
             <TrendingUp className="w-10 h-10 text-white" />
           </motion.div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            FinTrack
+            FinTrackbuddy
           </h1>
           <p className="text-muted-foreground mt-2">
             Premium Finance Management
