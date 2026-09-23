@@ -19,7 +19,6 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
 
-    // ✅ Demo Credentials
     const demoEmail = "demo@fintrack.com";
     const demoPassword = "123456";
 
@@ -30,9 +29,7 @@ export default function Login() {
           email: demoEmail,
         };
 
-        // ✅ AuthContext update karo (localStorage bhi automatically ho jayega)
         login("dummy-token", userData);
-
         navigate("/dashboard");
       } else {
         alert("Invalid Credentials! Use demo@fintrack.com / 123456");
@@ -69,7 +66,7 @@ export default function Login() {
             <TrendingUp className="w-10 h-10 text-white" />
           </motion.div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            FinTrackbuddy
+            FinTrackBuddy
           </h1>
           <p className="text-muted-foreground mt-2">
             Premium Finance Management
@@ -80,7 +77,7 @@ export default function Login() {
         <div className="glass rounded-2xl shadow-2xl p-8 border border-white/20">
           <h2 className="text-2xl font-bold mb-6">Welcome Back</h2>
 
-          {/* ✅ Demo Credentials Hint */}
+          {/* Demo Credentials Hint */}
           <div className="mb-5 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-sm">
             <p className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
               🎯 Demo Credentials:
