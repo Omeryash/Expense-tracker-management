@@ -4,15 +4,24 @@ on:
   push:
     branches:
       - main
+      - develop_frontend
 
   pull_request:
     branches:
       - main
 
 jobs:
-  build-and-push:
 
+  # =========================
+  # CI - Build React App
+  # =========================
+  build:
+    name: Build React App
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./Smart_Expense_Tracker
 
     steps:
 
@@ -24,8 +33,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
+          cache-dependency-path: Smart_Expense_Tracker/package-lock.json
 
       # 3. Install dependencies
       - name: Install dependencies
@@ -35,19 +45,38 @@ jobs:
       - name: Build React app
         run: npm run build
 
-      # 5. Login to DockerHub
+
+  # =========================
+  # CD - Build & Push Docker
+  # =========================
+  docker:
+    name: Build and Push Docker Image
+    needs: build
+
+    # Only run Docker deployment after push to main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Login to DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 6. Build Docker image
+      # 3. Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t yashdev04/smart-expense-tracker:latest .
+          docker build -t yashdev04/smart-expense-tracker:latest ./Smart_Expense_Tracker
 
-      # 7. Push Docker image
+      # 4. Push Docker image
       - name: Push Docker image
         run: |
           docker push yashdev04/smart-expense-tracker:latest
