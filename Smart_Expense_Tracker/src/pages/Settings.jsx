@@ -13,14 +13,17 @@ import {
   CreditCard,
   Download,
   LogOut,
+  CheckCircle2,
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { useCurrency } from "../context/CurrencyContext";
-import { motion } from "framer-motion";
+import { useExpenses } from "../context/ExpenseContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();
   const { currency, setCurrency, currencies } = useCurrency();
+  const { expenses } = useExpenses();
   const navigate = useNavigate();
 
   const [settings, setSettings] = useState({
@@ -33,6 +36,45 @@ export default function Settings() {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+
+  // ✅ Export CSV Function
+  const handleExport = () => {
+    if (expenses.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    const headers = ["Date", "Title", "Category", "Type", "Amount", "Status"];
+    const rows = expenses.map((t) => [
+      t.date,
+      `"${t.title}"`,
+      t.category,
+      t.type,
+      t.amount,
+      t.status || "completed",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `fintrackbuddy_export_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    setShowExportModal(true);
+  };
 
   const sections = [
     {
@@ -128,7 +170,7 @@ export default function Settings() {
       icon: Download,
       description: "Download your financial data",
       action: (
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" onClick={handleExport}>
           Export
         </Button>
       ),
@@ -191,6 +233,66 @@ export default function Settings() {
         </Card>
       </div>
 
+      {/* ✅ Export Success Modal */}
+      <AnimatePresence>
+        {showExportModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowExportModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
+            >
+              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                <div className="p-8 text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-20 h-20 bg-green-500/10 rounded-full mb-5"
+                  >
+                    <CheckCircle2 className="w-10 h-10 text-green-500" />
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold mb-2">Export Complete!</h3>
+
+                  <p className="text-muted-foreground text-sm mb-6">
+                    Your data has been successfully exported as a CSV file.
+                    Check your downloads folder.
+                  </p>
+
+                  <div className="bg-muted/50 rounded-xl p-3 mb-6 text-left">
+                    <p className="text-xs text-muted-foreground mb-1">
+                      File name:
+                    </p>
+                    <p className="text-sm font-mono truncate">
+                      fintrackbuddy_export_
+                      {new Date().toISOString().split("T")[0]}.csv
+                    </p>
+                  </div>
+
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowExportModal(false)}
+                  >
+                    Got it
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Account Modal */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
@@ -227,7 +329,6 @@ export default function Settings() {
                 localStorage.removeItem("expenses");
                 localStorage.removeItem("currency");
                 setShowDeleteModal(false);
-                alert("Account deleted successfully!");
                 navigate("/login");
               }}
             >
