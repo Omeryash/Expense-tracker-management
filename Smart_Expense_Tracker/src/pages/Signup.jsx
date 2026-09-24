@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Eye,
+  EyeOff,
+  TrendingUp,
+  CheckCircle2,
+  XCircle,
+  X,
+} from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 
@@ -9,6 +16,8 @@ export default function Signup() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,12 +27,41 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     setTimeout(() => {
-      alert("Signup successful! Please login with demo@fintrack.com / 123456");
-      navigate("/login");
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+
+      const emailExists = existingUsers.some(
+        (u) => u.email.toLowerCase() === formData.email.toLowerCase(),
+      );
+
+      if (emailExists) {
+        setError("This email is already registered. Please login.");
+        setLoading(false);
+        return;
+      }
+
+      const newUser = {
+        id: Date.now(),
+        name: formData.name,
+        email: formData.email.toLowerCase(),
+        password: formData.password,
+        createdAt: new Date().toISOString(),
+      };
+
+      const updatedUsers = [...existingUsers, newUser];
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+
       setLoading(false);
-    }, 1000);
+      // ✅ Show success modal instead of alert
+      setShowSuccessModal(true);
+    }, 800);
+  };
+
+  const handleGoToLogin = () => {
+    setShowSuccessModal(false);
+    navigate("/login");
   };
 
   return (
@@ -64,10 +102,18 @@ export default function Signup() {
         <div className="glass rounded-2xl shadow-2xl p-8 border border-white/20">
           <h2 className="text-2xl font-bold mb-6">Create Account</h2>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-sm text-red-600 dark:text-red-400">
+              ⚠️ {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Full Name"
               type="text"
+              name="name"
+              autoComplete="name"
               placeholder="John Doe"
               value={formData.name}
               onChange={(e) =>
@@ -79,6 +125,8 @@ export default function Signup() {
             <Input
               label="Email Address"
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="john@example.com"
               value={formData.email}
               onChange={(e) =>
@@ -90,6 +138,8 @@ export default function Signup() {
             <Input
               label="Password"
               type={showPassword ? "text" : "password"}
+              name="password"
+              autoComplete="new-password"
               placeholder="Create a password"
               value={formData.password}
               onChange={(e) =>
@@ -147,6 +197,92 @@ export default function Signup() {
           </div>
         </div>
       </motion.div>
+
+      {/* ✅ Success Modal */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleGoToLogin}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
+            >
+              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                {/* Close Button */}
+                <button
+                  onClick={handleGoToLogin}
+                  className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-accent transition z-10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className="p-8 text-center">
+                  {/* Success Icon */}
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-20 h-20 bg-green-500/10 rounded-full mb-5"
+                  >
+                    <CheckCircle2 className="w-10 h-10 text-green-500" />
+                  </motion.div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl font-bold mb-2">Account Created!</h3>
+
+                  {/* Message */}
+                  <p className="text-muted-foreground text-sm mb-6">
+                    Your account has been created successfully. You can now
+                    login with your credentials.
+                  </p>
+
+                  {/* Credentials Box */}
+                  <div className="bg-muted/50 rounded-xl p-4 mb-6 text-left space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">
+                      Your Credentials
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Email:</span>
+                      <span className="font-mono font-medium truncate ml-2">
+                        {formData.email}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Password:</span>
+                      <span className="font-mono font-medium">
+                        {"•".repeat(formData.password.length)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowSuccessModal(false)}
+                    >
+                      Close
+                    </Button>
+                    <Button className="flex-1" onClick={handleGoToLogin}>
+                      Go to Login
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Eye, EyeOff, TrendingUp, XCircle, X } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { useTheme } from "../context/ThemeContext";
@@ -13,30 +13,54 @@ export default function Login() {
   const { login } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    const demoEmail = "demo@fintrack.com";
-    const demoPassword = "123456";
+    setError("");
 
     setTimeout(() => {
-      if (formData.email === demoEmail && formData.password === demoPassword) {
-        const userData = {
-          name: "Demo User",
-          email: demoEmail,
-        };
+      const enteredEmail = formData.email.toLowerCase().trim();
+      const enteredPassword = formData.password;
 
+      // 1. Demo credentials
+      const isDemo =
+        enteredEmail === "demo@fintrack.com" && enteredPassword === "123456";
+
+      if (isDemo) {
+        const userData = { name: "Demo User", email: "demo@fintrack.com" };
         login("dummy-token", userData);
+        setLoading(false);
         navigate("/dashboard");
-      } else {
-        alert("Invalid Credentials! Use demo@fintrack.com / 123456");
+        return;
       }
 
+      // 2. Saved users
+      const existingUsers = JSON.parse(localStorage.getItem("users") || "[]");
+
+      const matchedUser = existingUsers.find(
+        (u) =>
+          u.email.toLowerCase() === enteredEmail &&
+          u.password === enteredPassword,
+      );
+
+      if (matchedUser) {
+        const userData = { name: matchedUser.name, email: matchedUser.email };
+        login("dummy-token-" + matchedUser.id, userData);
+        setLoading(false);
+        navigate("/dashboard");
+        return;
+      }
+
+      // 3. No match — show error modal
       setLoading(false);
-    }, 1500);
+      setErrorMessage("Invalid email or password. Please check and try again.");
+      setShowErrorModal(true);
+    }, 1000);
   };
 
   return (
@@ -76,8 +100,6 @@ export default function Login() {
         {/* Login Card */}
         <div className="glass rounded-2xl shadow-2xl p-8 border border-white/20">
           <h2 className="text-2xl font-bold mb-6">Welcome Back</h2>
-
-          {/* ✅ Demo Credentials box REMOVED */}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
@@ -152,6 +174,61 @@ export default function Login() {
           </div>
         </div>
       </motion.div>
+
+      {/* ✅ Error Modal */}
+      <AnimatePresence>
+        {showErrorModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowErrorModal(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.4 }}
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
+            >
+              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden relative">
+                <button
+                  onClick={() => setShowErrorModal(false)}
+                  className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-accent transition z-10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className="p-8 text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
+                    className="inline-flex items-center justify-center w-20 h-20 bg-red-500/10 rounded-full mb-5"
+                  >
+                    <XCircle className="w-10 h-10 text-red-500" />
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold mb-2">Login Failed</h3>
+
+                  <p className="text-muted-foreground text-sm mb-6">
+                    {errorMessage}
+                  </p>
+
+                  <Button
+                    className="w-full"
+                    onClick={() => setShowErrorModal(false)}
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
