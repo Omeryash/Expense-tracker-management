@@ -104,14 +104,23 @@ export const Header = ({ onMenuClick, sidebarOpen }) => {
       <div className="flex items-center justify-between h-full px-4 sm:px-6 gap-3">
         {/* Left Side: Hamburger + Search */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* ✅ Hamburger Menu - Visible on ALL screen sizes */}
-          <button
-            onClick={onMenuClick}
-            className="p-2 rounded-xl hover:bg-accent transition flex-shrink-0"
-            aria-label="Toggle menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+          {/* ✅ Hamburger - Sirf tab dikhe jab sidebar CLOSED ho */}
+          <AnimatePresence mode="wait">
+            {!sidebarOpen && (
+              <motion.button
+                key="hamburger"
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                transition={{ duration: 0.2 }}
+                onClick={onMenuClick}
+                className="p-2 rounded-xl hover:bg-accent transition flex-shrink-0"
+                aria-label="Open sidebar"
+              >
+                <Menu className="w-5 h-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
 
           {/* Search Bar */}
           <div className="relative flex-1 max-w-md">
