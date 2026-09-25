@@ -38,7 +38,6 @@ export default function Settings() {
   const [showConfigModal, setShowConfigModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
 
-  // ✅ Export CSV Function
   const handleExport = () => {
     if (expenses.length === 0) {
       alert("No data available to export");
@@ -233,7 +232,7 @@ export default function Settings() {
         </Card>
       </div>
 
-      {/* ✅ Export Success Modal */}
+      {/* ✅ Export Success Modal - PERFECTLY CENTERED */}
       <AnimatePresence>
         {showExportModal && (
           <>
@@ -244,50 +243,58 @@ export default function Settings() {
               onClick={() => setShowExportModal(false)}
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm z-50 px-4"
-            >
-              <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
-                <div className="p-8 text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", delay: 0.15, stiffness: 200 }}
-                    className="inline-flex items-center justify-center w-20 h-20 bg-green-500/10 rounded-full mb-5"
-                  >
-                    <CheckCircle2 className="w-10 h-10 text-green-500" />
-                  </motion.div>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: "spring", duration: 0.4 }}
+                className="relative w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              >
+                <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="p-6 sm:p-8 text-center">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: "spring",
+                        delay: 0.15,
+                        stiffness: 200,
+                      }}
+                      className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-green-500/10 rounded-full mb-4 sm:mb-5"
+                    >
+                      <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
+                    </motion.div>
 
-                  <h3 className="text-2xl font-bold mb-2">Export Complete!</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold mb-2">
+                      Export Complete!
+                    </h3>
 
-                  <p className="text-muted-foreground text-sm mb-6">
-                    Your data has been successfully exported as a CSV file.
-                    Check your downloads folder.
-                  </p>
-
-                  <div className="bg-muted/50 rounded-xl p-3 mb-6 text-left">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      File name:
+                    <p className="text-muted-foreground text-sm mb-5 sm:mb-6">
+                      Your data has been successfully exported as a CSV file.
+                      Check your downloads folder.
                     </p>
-                    <p className="text-sm font-mono truncate">
-                      fintrackbuddy_export_
-                      {new Date().toISOString().split("T")[0]}.csv
-                    </p>
+
+                    <div className="bg-muted/50 rounded-xl p-3 mb-5 sm:mb-6 text-left">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        File name:
+                      </p>
+                      <p className="text-sm font-mono break-all">
+                        fintrackbuddy_export_
+                        {new Date().toISOString().split("T")[0]}.csv
+                      </p>
+                    </div>
+
+                    <Button
+                      className="w-full"
+                      onClick={() => setShowExportModal(false)}
+                    >
+                      Got it
+                    </Button>
                   </div>
-
-                  <Button
-                    className="w-full"
-                    onClick={() => setShowExportModal(false)}
-                  >
-                    Got it
-                  </Button>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
