@@ -7,26 +7,23 @@ import {
   User,
   Settings,
   LogOut,
-  Check,
   X,
+  Menu,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeToggle } from "../common/ThemeToggle";
 import { AuthContext } from "../../context/AuthContext";
 
-export const Header = () => {
+export const Header = ({ onMenuClick, sidebarOpen }) => {
   const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
 
-  // Dropdown states
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  // Refs for click outside detection
   const notificationsRef = useRef(null);
   const userMenuRef = useRef(null);
 
-  // Dummy notifications
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -56,7 +53,6 @@ export const Header = () => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -69,29 +65,24 @@ export const Header = () => {
         setUserMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Mark notification as read
   const markAsRead = (id) => {
     setNotifications(
       notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
     );
   };
 
-  // Mark all as read
   const markAllAsRead = () => {
     setNotifications(notifications.map((n) => ({ ...n, read: true })));
   };
 
-  // Delete notification
   const deleteNotification = (id) => {
     setNotifications(notifications.filter((n) => n.id !== id));
   };
 
-  // Handle logout
   const handleLogout = () => {
     logout();
     localStorage.removeItem("token");
@@ -99,30 +90,45 @@ export const Header = () => {
     navigate("/login");
   };
 
-  // Handle navigation from user menu
   const handleNavigate = (path) => {
     setUserMenuOpen(false);
     navigate(path);
   };
 
   return (
-    <header className="fixed top-0 right-0 left-72 h-16 border-b border-border bg-card/50 backdrop-blur-xl z-20">
-      <div className="flex items-center justify-between h-full px-6">
-        {/* Search Bar */}
-        <div className="relative w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search transactions..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-          />
+    <header
+      className={`fixed top-0 right-0 h-16 border-b border-border bg-card/50 backdrop-blur-xl z-20 transition-all duration-300 ${
+        sidebarOpen ? "left-0 lg:left-72" : "left-0"
+      }`}
+    >
+      <div className="flex items-center justify-between h-full px-4 sm:px-6 gap-3">
+        {/* Left Side: Hamburger + Search */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* ✅ Hamburger Menu - Visible on ALL screen sizes */}
+          <button
+            onClick={onMenuClick}
+            className="p-2 rounded-xl hover:bg-accent transition flex-shrink-0"
+            aria-label="Toggle menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Search Bar */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+            />
+          </div>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4">
+        {/* Right Side */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <ThemeToggle />
 
-          {/* ✅ Notifications Dropdown */}
+          {/* Notifications */}
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setNotificationsOpen(!notificationsOpen)}
@@ -147,9 +153,8 @@ export const Header = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-96 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 mt-2 w-80 sm:w-96 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
-                  {/* Header */}
                   <div className="flex items-center justify-between p-4 border-b border-border">
                     <div>
                       <h3 className="font-semibold">Notifications</h3>
@@ -167,7 +172,6 @@ export const Header = () => {
                     )}
                   </div>
 
-                  {/* Notifications List */}
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center">
@@ -191,7 +195,11 @@ export const Header = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
                               <p
-                                className={`text-sm ${!notification.read ? "font-semibold" : "font-medium"}`}
+                                className={`text-sm ${
+                                  !notification.read
+                                    ? "font-semibold"
+                                    : "font-medium"
+                                }`}
                               >
                                 {notification.title}
                               </p>
@@ -219,27 +227,18 @@ export const Header = () => {
                       ))
                     )}
                   </div>
-
-                  {/* Footer */}
-                  {notifications.length > 0 && (
-                    <div className="p-3 border-t border-border text-center">
-                      <button className="text-sm text-primary hover:underline font-medium">
-                        View all notifications
-                      </button>
-                    </div>
-                  )}
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* ✅ User Menu Dropdown */}
+          {/* User Menu */}
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-3 p-2 rounded-xl hover:bg-accent transition"
+              className="flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-xl hover:bg-accent transition"
             >
-              <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-sm font-semibold">
                   {user?.name?.charAt(0)?.toUpperCase() || "U"}
                 </span>
@@ -249,7 +248,9 @@ export const Header = () => {
                 <p className="text-xs text-muted-foreground">Premium User</p>
               </div>
               <ChevronDown
-                className={`w-4 h-4 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transition-transform hidden sm:block ${
+                  userMenuOpen ? "rotate-180" : ""
+                }`}
               />
             </button>
 
@@ -262,7 +263,6 @@ export const Header = () => {
                   transition={{ duration: 0.15 }}
                   className="absolute right-0 mt-2 w-64 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden z-50"
                 >
-                  {/* User Info */}
                   <div className="p-4 border-b border-border bg-gradient-to-r from-primary/5 to-purple-600/5">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center">
@@ -281,7 +281,6 @@ export const Header = () => {
                     </div>
                   </div>
 
-                  {/* Menu Items */}
                   <div className="p-2">
                     <button
                       onClick={() => handleNavigate("/profile")}
@@ -300,7 +299,6 @@ export const Header = () => {
                     </button>
                   </div>
 
-                  {/* Logout */}
                   <div className="p-2 border-t border-border">
                     <button
                       onClick={handleLogout}
