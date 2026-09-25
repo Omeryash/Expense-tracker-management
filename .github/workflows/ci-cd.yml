@@ -122,8 +122,6 @@
 
 # netlify and docker both 
 
-
-
 name: Smart Expense Tracker CI/CD
 
 on:
@@ -139,10 +137,10 @@ on:
 jobs:
 
   # =========================
-  # CI - Build React App
+  # CI - Test & Build React App
   # =========================
   build:
-    name: Build React App
+    name: Test and Build React App
     runs-on: ubuntu-latest
 
     defaults:
@@ -151,9 +149,11 @@ jobs:
 
     steps:
 
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -161,9 +161,15 @@ jobs:
           cache: npm
           cache-dependency-path: Smart_Expense_Tracker/package-lock.json
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4. Run automated tests
+      - name: Run tests
+        run: npm test
+
+      # 5. Build React application
       - name: Build React app
         run: npm run build
 
@@ -175,30 +181,31 @@ jobs:
     name: Build and Push Docker Image
     needs: build
 
+    # Only run Docker deployment after push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest
 
     steps:
 
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Login to DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 3. Build Docker image
       - name: Build Docker image
-        run: |
-          docker build \
-            -t yashdev04/smart-expense-tracker:latest \
-            ./Smart_Expense_Tracker
+        run: docker build -t yashdev04/smart-expense-tracker:latest ./Smart_Expense_Tracker
 
+      # 4. Push Docker image
       - name: Push Docker image
-        run: |
-          docker push yashdev04/smart-expense-tracker:latest
+        run: docker push yashdev04/smart-expense-tracker:latest
 
 
   # =========================
@@ -208,6 +215,7 @@ jobs:
     name: Deploy to Netlify
     needs: build
 
+    # Only run Netlify deployment after push to main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     runs-on: ubuntu-latest
@@ -218,9 +226,11 @@ jobs:
 
     steps:
 
+      # 1. Checkout repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -228,12 +238,15 @@ jobs:
           cache: npm
           cache-dependency-path: Smart_Expense_Tracker/package-lock.json
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
 
+      # 4. Build React application
       - name: Build React app
         run: npm run build
 
+      # 5. Deploy to Netlify
       - name: Deploy to Netlify
         uses: netlify/actions/cli@master
         with:
